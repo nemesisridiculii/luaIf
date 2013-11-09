@@ -22,7 +22,7 @@ A large brown leather couch.]];
 };
 
 
-room.livingroom.placeIn(thing.couch);
+room.livingroom:placeIn(thing.couch);
 
 
 
