@@ -1,6 +1,11 @@
 verbs = {};
+junkWords = {"the", "a"};
 
-capture = {Thing = {__action="capture", type=Thing}};
+capture = {
+   Object = {__action="capture", type=Object};
+   Thing = {__action="capture", type=Thing};
+   Rest = {__action="capture", type="REST"};
+};
 
 function getVerbHandlers(verb)
    if(verbs[verb] == nil) then
@@ -20,7 +25,7 @@ function addVerb(spec, func)
 
    for i,v in ipairs(verblist) do
      local handlers = getVerbHandlers(v);
-     handlers[#handlers + 1] = {spec = spec, func = func, test = 1};
+     handlers[#handlers + 1] = {spec = spec, func = func};
    end
 end
 
@@ -45,7 +50,7 @@ function parse(st)
    for _,verb in ipairs(parserSearchList) do
       if(matchVerb(tokens, verb)) then
 	 foundVerb = true;
-	 for _,spec in ipairs(verbs[verb.verb]) do
+	 for _,spec in ripairs(verbs[verb.verb]) do
 	    if(parseRest(spec, tokens, #verb.tokens)) then
 	       return "Success";
 	    end
@@ -74,6 +79,7 @@ end
 function parseRest(spec, tokens, tknidx)
    local thiscaptokens;
    local captures = {};
+   local captureTypes = {};
    local func = spec.func;
    spec = spec.spec;
 
@@ -91,6 +97,7 @@ function parseRest(spec, tokens, tknidx)
        if(capinqueue) then error("Cannot have two consecutive captures.") end;
        
        thiscaptokens = {};
+       captureTypes[#captureTypes+1] = tknspec;
        captures[#captures+1] = thiscaptokens;
        capinqueue = true;
      else
@@ -121,19 +128,31 @@ function parseRest(spec, tokens, tknidx)
         tknidx = tknidx+1;
 	thiscaptokens[#thiscaptokens+1] = tokens[tknidx];
       end
+    else
+       if(tknidx < #tokens) then
+	  return false;
+       end
     end
 
     --now try to capture the results
-    --TODO
-    print("captured tokens:");
-    for i=1,#captures do
-      print(table.concat(captures[i], " "));
-    end 
+    local captureObjects = {};
+    for i,v in ipairs(captures) do
+       if(captureTypes[i].type == "REST") then
+	  captureObjects = v;
+       else
+	  for x in visible() do
+	     if(x:isA(captureTypes[i].type) and x:match(v)) then
+		captureObjects[i] = x;
+		break;
+	     end
+	  end
+       end
+
+       if(captureObjects[i] == nil) then return false; end	  
+    end
        
-
-   --return spec.func(unpack(captures));
-   return true;
-
+   return func(unpack(captureObjects));
+   
 end
 
 

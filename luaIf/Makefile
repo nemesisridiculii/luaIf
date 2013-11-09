@@ -1,2 +1,2 @@
-luaIf.lua: init.lua object.lua parser.lua verbs.lua
-	cat init.lua object.lua parser.lua verbs.lua > luaIf.lua
+luaIf.lua: init.lua util.lua object.lua parser.lua verbs.lua current.lua main.lua
+	cat init.lua util.lua object.lua parser.lua verbs.lua current.lua main.lua > luaIf.lua
