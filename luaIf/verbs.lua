@@ -7,11 +7,8 @@ addVerb({ {"place", "put"}, capture.Thing, {"on", "in"}, capture.Thing },
 
 addVerb({ "look" },
 	function()
-	   print(current.room.short);
-	   if(not current.room.visited) then
-	      print(current.room.desc);
-	      current.room.visited = true;
-	   end
+	   if(current.room == nil) then error("The error is not in a room"); end
+	   current.room:describe();
 	   return true;
 	end
 );
@@ -19,8 +16,7 @@ addVerb({ "look" },
 
 addVerb({ "look", "at", capture.Object},
 	function(obj)
-	   print(obj.short);
-	   print(obj.desc);
+	   obj:describe();
 	   return true;
 	end
 );

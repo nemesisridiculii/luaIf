@@ -7,3 +7,9 @@ function ripairs(list)
       return i, x[i] 
    end, list, #list+1;
 end
+
+function capitalize(x)
+   if(type(x) ~= "string") then error("capitalize must be called on a string"); end
+   
+   return x:sub(1, 1):upper()..x:sub(2);
+end

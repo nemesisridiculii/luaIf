@@ -1,5 +1,7 @@
 
-Object = {};
+Object = {
+   pronoun = "the";
+};
 
 function Object:new(x)
    x = x or {};
@@ -45,6 +47,32 @@ function Object:placeIn(obj)
    if(self.contains == nil) then self.contains = {}; end
 
    self.contains[#self.contains+1] = obj;
+end
+
+function Object:describe()
+   if(self.short) then io.write(capitalize(self.short), "\n"); end
+   if(self.desc) then io.write(self.desc, "\n"); end
+   if(type(self.contains) == "table") then
+      if(self.short) then
+	 io.write("\nIn ", self.pronoun, " ", self.short, " is:\n");
+      else
+	 io.write("Inside is:\n");
+      end
+      for i,x in ipairs(self.contains) do
+	 if(x.short) then io.write("  ", capitalize(x.pronoun), " ", x.short, "\n"); end
+      end
+   end
+
+   if(type(self.supports) == "table") then
+      if(self.short) then
+	 io.write("\nOn ", self.pronoun, " ", self.short, " is:\n");
+      else
+	 io.write("On it is:\n");
+      end
+      for i,x in ipairs(self.supports) do
+	 if(x.short) then io.write("  ", capitalize(x.pronoun), " ", x.short, "\n"); end
+      end
+   end
 end
 
 ----------------------------
