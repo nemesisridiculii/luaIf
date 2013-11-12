@@ -1,6 +1,9 @@
 current = {
    inventory = Object:new{
-      name={"inventory"},
+      pronoun="your";
+      short="inventory";
+      name={"inventory"};
+      contains={};
       container=true};
    living = true;
    running = true;
