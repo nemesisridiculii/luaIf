@@ -44,7 +44,8 @@ A plastic pipe.]];
 thing.chest:placeIn(thing.pipe);
 
 thing.junk = luaIf.Thing:new{
-   short="Some junk";
+   short="junk";
+   pronoun="some";
    desc = [[
 Piles of stuff]];
    name = {"junk", "piles", "stuff"};

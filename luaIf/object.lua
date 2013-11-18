@@ -130,6 +130,32 @@ function Object:shortDescribe(pronoun, contentsLevel, supportsLevel, curlevel)
    end
 end
 
+
+function Object:before(what, ...)
+   return self:hook("before", what, ...);
+end
+
+function Object:after(what, ...)
+   return self:hook("after", what, ...);
+end
+
+function Object:alert(what, ...)
+   return self:hook("alert", what, ...);
+end
+
+function Object:hook(when, what, ...)
+   if(type(what) ~= "string" or what == "") then 
+      error("hook expects the name of the event."); 
+   end
+
+   what = when.."-"..what;
+   if(type(self[what]) == "function") then
+      return self[what](...);
+   end
+end
+
+   
+
 ----------------------------
 Thing = Object:new();
 
