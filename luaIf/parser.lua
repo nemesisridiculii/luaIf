@@ -124,10 +124,11 @@ function parseRest(spec, tokens, tknidx)
     end
 
     if(capinqueue) then
-      while(tknidx < #tokens) do
-        tknidx = tknidx+1;
-	thiscaptokens[#thiscaptokens+1] = tokens[tknidx];
-      end
+       if(tknidx >= #tokens) then return false; end
+       while(tknidx < #tokens) do
+	  tknidx = tknidx+1;
+	  thiscaptokens[#thiscaptokens+1] = tokens[tknidx];
+       end
     else
        if(tknidx < #tokens) then
 	  return false;

@@ -15,12 +15,23 @@ addVerb({ "look" },
 );
 
 
-addVerb({ "look", "at", capture.Object},
-	function(obj)
+function lookAt(obj)
 	   if(current.room:alert("look", obj)) then return true; end
 	   if(obj:before("look")) then return true; end
 	   obj:describe();
 	   obj:after("look");
+end
+
+addVerb({ "look", {"at", "in", "on"}, capture.Object},
+	function(obj)
+	   lookAt(obj);
+	   return true;
+	end
+);
+
+addVerb({ "look", capture.Object},
+	function(obj)
+	   lookAt(obj);
 	   return true;
 	end
 );
@@ -53,10 +64,10 @@ function take(obj)
       return true;
    end
    
-   
+   obj:liberate();
    current.inventory:placeIn(obj);
-   io.write("taken\n");
-   obj:after("take");
+   if(obj:after("take")) then return true; end
+   io.write("taken\n");   
 end
 
 
@@ -67,3 +78,25 @@ addVerb({{"take", "pick up"}, capture.Thing},
 	end
 	);
 	
+
+addVerb({"open", capture.Thing},
+	function(obj)
+	   if(not obj.openable) then
+	      io.write("It cannot be opened\n");
+	      return true;
+	   end
+
+	   if(obj.open) then
+	      io.write("It is already open\n");
+	      return true;
+	   end
+	   
+	   if(current.room:alert("open", obj)) then return true; end
+	   if(obj:before("open")) then return true end;
+	   obj.open = true;
+	   if(obj:after("open")) then return true; end
+	   io.write("Opened\n");
+	   return true;
+	end
+);
+	   

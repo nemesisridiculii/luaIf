@@ -34,9 +34,21 @@ function Object:match(tokens)
   --TODO: this is O(n^2) can we do better?
   for j,t in ipairs(tokens) do
     found = false;
-    for i,n in ipairs(self.name) do
-      if(n == t) then found=true; break; end
+
+    if(self.pronoun == t) then found = true; end
+
+    if(not found) then
+       for i,n in ipairs(self.name) do
+	  if(n == t) then found=true; break; end
+       end
     end
+
+    if(not found) then
+       for i,n in ipairs(junkWords) do
+	  if(n == t) then found=true; break; end
+       end
+    end
+
     if(found == false) then return false; end
   end
 
@@ -47,13 +59,55 @@ function Object:placeIn(obj)
    if(self.contains == nil) then self.contains = {}; end
 
    self.contains[#self.contains+1] = obj;
+   obj.container = self;
 end
 
 function Object:placeOn(obj)
    if(self.supports == nil) then self.supports = {}; end
 
    self.supports[#self.supports+1] = obj;
+   obj.supporter = self;
 end
+
+function Object:removeFrom(obj)
+   if(obj.supporter == self) then
+      if(self.supports == nil) then error("Tried to remove an object that isn't supported"); end
+      obj.supporter = nil;
+      local found = false;
+      for i,v in ipairs(self.supports) do
+	 if(v == obj) then 
+	    table.remove(self.supports, i);
+	    found = true;
+	    break;
+	 end
+      end
+      if(not found) then error("Object wasn't in the list"); end
+   else if(obj.container == self) then
+	 if(self.contains == nil) then error("Tried to remove an object that is not contianed"); end
+	 obj.container = nil;
+	 local found = false
+	 for i,v in ipairs(self.contains) do
+	    if(v == obj) then
+	       table.remove(self.supports, i);
+	       found = true;
+	       break;
+	    end
+	 end
+	 if(not found) then error("Object wasn't in the list"); end
+	end
+   end
+end
+
+function Object:liberate()
+   if(self.continer) then
+      self.container:removeFrom(self);
+   end
+
+   if(self.supporter) then
+      self.supporter:removeFrom(self);
+   end
+end
+   
 
 function Object:describe(contentsLevel, supportsLevel, curlevel)
    contentsLevel = contentsLevel or 1;
@@ -148,9 +202,9 @@ function Object:hook(when, what, ...)
       error("hook expects the name of the event."); 
    end
 
-   what = when.."-"..what;
+   what = when.."_"..what;
    if(type(self[what]) == "function") then
-      return self[what](...);
+      return self[what](self, ...);
    end
 end
 
