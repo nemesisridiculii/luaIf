@@ -1,7 +1,39 @@
-addVerb({ {"place", "put"}, capture.Thing, {"on", "in"}, capture.Thing },
-	function(one, two) 
-	   print("placing", one, "->", two);
-	   return true;
+addVerb({ {"place", "put"}, capture.Inventory, "on", capture.Thing },
+	function(noun, dest) 
+	   if(not dest.supports) then
+	      io.write("That won't work.\n");
+	      return true;
+	   end
+
+	   if(dest:alert("put_on", noun)) then return true; end
+	   if(noun:before("put_on")) then return true; end
+	   dest:placeOn(noun);
+	   if(dest:after("put_on")) then return true; end
+	   io.write("Placed ", noun.pronoun, " ", noun.short, 
+		    " on ", dest.pronoun, " ", dest.short, ".\n");
+	   return true
+	end
+);
+
+addVerb({ {"place", "put"}, capture.Inventory, "in", capture.Thing },
+	function(noun, dest) 
+	   if(not dest.contains) then
+	      io.write("That won't work.\n");
+	      return true;
+	   end
+
+	   if(not dest.open) then
+	      io.write("It isn't open\n");
+	      return true;
+	   end
+
+	   if(dest:alert("put_in", noun)) then return true; end
+	   if(noun:before("put_in")) then return true; end
+	   dest:placeIn(noun);
+	   if(dest:after("put_in")) then return true; end
+	   io.write("Placed ", noun.pronoun, " ", noun.short, 
+		    " in ", dest.pronoun, " ", dest.short, ".\n");
+	   return true
 	end
 );
 
@@ -64,7 +96,6 @@ function take(obj)
       return true;
    end
    
-   obj:liberate();
    current.inventory:placeIn(obj);
    if(obj:after("take")) then return true; end
    io.write("taken\n");   
@@ -82,12 +113,12 @@ addVerb({{"take", "pick up"}, capture.Thing},
 addVerb({"open", capture.Thing},
 	function(obj)
 	   if(not obj.openable) then
-	      io.write("It cannot be opened\n");
+	      io.write("It cannot be opened.\n");
 	      return true;
 	   end
 
 	   if(obj.open) then
-	      io.write("It is already open\n");
+	      io.write("It is already open.\n");
 	      return true;
 	   end
 	   
@@ -99,4 +130,27 @@ addVerb({"open", capture.Thing},
 	   return true;
 	end
 );
+	   
+addVerb({"close", capture.Thing},
+	function(obj)
+	   if(not obj.openable) then
+	      io.write("It cannot be closed.\n")
+	      return true;
+	   end
+
+	   if(not obj.open) then
+	      io.write("It is not open.\n");
+	      return true;
+	   end
+
+	   if(current.room:alert("close", obj)) then return true; end
+	   if(obj:before("close")) then return true; end
+	   obj.open = false;
+	   if(obj:after("close")) then return true; end
+	   io.write("Closed.\n");
+	   return true;
+	end
+);
+
+	   
 	   

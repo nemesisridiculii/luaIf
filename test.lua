@@ -44,6 +44,26 @@ floor do you?
       end
       return true;
    end;
+
+   before_close = function(self)
+      io.write("You close the lid and latch the latches.\n");
+      self.open = false;
+      luaIf.current.score = luaIf.current.score - 5;
+      return true;
+   end;
+
+   alert_put_on = function(self, x)
+      if(self.open) then
+	 io.write("It falls in.\n");
+	 self:placeIn(x);
+	 return true;
+      else
+	 io.write("You place ", x.pronoun, " ", x.short, 
+		  " on top of the chest.\n");
+	 self:placeOn(x);
+	 return true;
+      end
+   end;
 };
 room.livingroom:placeIn(thing.chest);
 

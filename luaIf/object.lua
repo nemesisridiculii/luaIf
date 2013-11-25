@@ -56,6 +56,7 @@ function Object:match(tokens)
 end
 
 function Object:placeIn(obj)
+   obj:liberate();
    if(self.contains == nil) then self.contains = {}; end
 
    self.contains[#self.contains+1] = obj;
@@ -63,6 +64,7 @@ function Object:placeIn(obj)
 end
 
 function Object:placeOn(obj)
+   obj:liberate();
    if(self.supports == nil) then self.supports = {}; end
 
    self.supports[#self.supports+1] = obj;
@@ -88,7 +90,7 @@ function Object:removeFrom(obj)
 	 local found = false
 	 for i,v in ipairs(self.contains) do
 	    if(v == obj) then
-	       table.remove(self.supports, i);
+	       table.remove(self.contains, i);
 	       found = true;
 	       break;
 	    end
@@ -99,7 +101,7 @@ function Object:removeFrom(obj)
 end
 
 function Object:liberate()
-   if(self.continer) then
+   if(self.container) then
       self.container:removeFrom(self);
    end
 

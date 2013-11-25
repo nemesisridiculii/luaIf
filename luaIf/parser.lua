@@ -4,6 +4,7 @@ junkWords = {"the", "a"};
 capture = {
    Object = {__action="capture", type=Object};
    Thing = {__action="capture", type=Thing};
+   Inventory = {__action="capture", type="INVENTORY"};
    Rest = {__action="capture", type="REST"};
 };
 
@@ -140,6 +141,13 @@ function parseRest(spec, tokens, tknidx)
     for i,v in ipairs(captures) do
        if(captureTypes[i].type == "REST") then
 	  captureObjects = v;
+       elseif(captureTypes[i].type == "INVENTORY") then
+	  for x in visible(current.inventory) do
+	     if(x:match(v)) then
+		captureObjects[i] = x;
+		break;
+	     end
+	  end
        else
 	  for x in visible() do
 	     if(x:isA(captureTypes[i].type) and x:match(v)) then
