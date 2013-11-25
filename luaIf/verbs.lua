@@ -152,5 +152,64 @@ addVerb({"close", capture.Thing},
 	end
 );
 
-	   
-	   
+
+function go(direction)
+   direction = directions[direction];
+   if(direction == nil) then
+      io.write("That is not a direction I recognize.\n");
+      return true;
+   end
+
+   if(current.room:alert("go", direction)) then return true; end
+   
+   local dest = current.room[direction];
+   if(dest == nil) then
+      io.write("You cannot go that way.\n");
+      return ture;
+   end
+
+   if(dest:before("go", direction)) then return true; end
+   current.room = dest;
+   if(dest:after("go", direction)) then return true; end
+   if(not dest.visited) then
+      dest.visited = true;
+      dest:describe();
+   end
+end
+
+directions = {
+   north = "north";
+   n = "north";
+   south = "south";
+   s = "south";
+   east = "east";
+   e = "east";
+   west = "west";
+   w = "west";
+   up = "up";
+   down = "down";
+}
+
+addVerb({"go", capture.Rest},
+	function(rest)
+	   if(#rest ~= 1) then return false; end
+
+	   go(rest[1]);
+	   return true;
+	end
+     );
+
+
+
+for d, dd in pairs(directions) do
+   addVerb({d},
+	   function()
+	      go(dd);
+	      return true;
+	   end
+	);
+end
+
+	      
+
+   

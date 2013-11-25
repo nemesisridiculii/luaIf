@@ -1,5 +1,9 @@
 function mainloop()
    updateParser();
+   
+   if(current.room == nil) then error("The player is not in a room"); end
+   current.room.visited = true;
+   current.room:describe();
 
    while(current.running and current.living) do
       if(current.room == nil) then error("The player is not in a room"); end

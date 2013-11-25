@@ -9,7 +9,7 @@ room.livingroom = luaIf.Room:new{
    desc = [[
 The main living space of the house. This large 
 room extends from the front door to the back.
-   There is a large brown leather couch here.]];
+]];
    name = {"living", "room"};
 };
 
@@ -98,6 +98,18 @@ thing.thinggy = luaIf.Thing:new{
    name={"unknown", "thinggy"};
 };
 luaIf.current.inventory:placeIn(thing.thinggy);
+
+
+------------------------------------------------
+room.diningroom = luaIf.Room:new{
+  north = room.livingroom;
+  short = "diningroom";
+  desc = [[
+This room might be more acurately named the game room.
+]];
+};
+
+room.livingroom.south = room.diningroom;
 	
 
 waysToDie = {};
