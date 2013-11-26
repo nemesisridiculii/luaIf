@@ -187,7 +187,9 @@ directions = {
    west = "west";
    w = "west";
    up = "up";
+   u = "up";
    down = "down";
+   d = "down";
 }
 
 addVerb({"go", capture.Rest},
