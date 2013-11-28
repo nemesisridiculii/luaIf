@@ -13,3 +13,11 @@ function capitalize(x)
    
    return x:sub(1, 1):upper()..x:sub(2);
 end
+
+
+function tableappend(tab, ...)
+   local vals = {...};
+   for i,v in ipairs(vals) do
+      tab[#tab+1] = v;
+   end
+end

@@ -8,15 +8,17 @@ current = {
    living = true;
    running = true;
    prompt = function() 
-	       io.write("\n");
-	       if(current.room and current.room.short) then io.write("~", capitalize(current.room.short), "~\n"); end
-	       if(current.score) then 
-		  io.write("[", current.score, " ");
-		  if(current.maxScore) then io.write("/ ", current.maxScore, " "); end
-		  io.write("pts.] ");
-	       end
-	       io.write("}>");
-	    end
+      io.write("\n");
+      if(current.room and current.room.short) then io.write("~", capitalize(current.room.short), "~\n"); end
+      if(current.score) then 
+	 io.write("[", current.score, " ");
+	 if(current.maxScore) then io.write("/ ", current.maxScore, " "); end
+	 io.write("pts.] ");
+      end
+      io.write("}>");
+   end;
+
+   eachTurn = function() end;
 };
 
 

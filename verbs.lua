@@ -126,7 +126,8 @@ addVerb({"open", capture.Thing},
 	   if(obj:before("open")) then return true end;
 	   obj.open = true;
 	   if(obj:after("open")) then return true; end
-	   io.write("Opened\n");
+	   io.write("Opened\n\n");
+	   obj:describeChildren(1, 0, "");
 	   return true;
 	end
 );

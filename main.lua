@@ -4,6 +4,7 @@ function mainloop()
    if(current.room == nil) then error("The player is not in a room"); end
    current.room.visited = true;
    current.room:describe();
+   current.turncount = 0;
 
    while(current.running and current.living) do
       if(current.room == nil) then error("The player is not in a room"); end
@@ -14,7 +15,11 @@ function mainloop()
       local res = parse(input);
       if(res ~= "Success") then
 	 io.write(string.format("I'm sorry, I couldn't understand you. %s\n", res));
+      else
+	 current.turncount = current.turncount + 1;
       end
+
+      current.eachTurn();
    end
 
    print();

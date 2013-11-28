@@ -110,26 +110,57 @@ function Object:liberate()
    end
 end
    
+function Object:details()
+   local res = {};
+   if(self.desc) then tableappend(res, self.desc); end
+   return table.concat(res);
+end
+
+function Object:phrase(pronoun, cap)
+   local res = {};
+   if(cap) then cap = capitalize else cap = function(x) return x; end end
+
+   if(self.short) then 
+      if(pronoun) then
+	 tableappend(res, cap(self.pronoun), " ", self.short);
+      else
+	 tableappend(res, cap(self.short)); 
+      end
+   end
+
+   return table.concat(res);
+end
 
 function Object:describe(contentsLevel, supportsLevel, curlevel)
    contentsLevel = contentsLevel or 1;
    supportsLevel = supportsLevel or 2;
-   
    if(curlevel) then curlevel = curlevel.."  "; else curlevel = ""; end
+   
+   io.write(curlevel, self:phrase(true, true), "\n\n")
+   io.write(curlevel, self:details(), "\n");
+   
+   self:describeChildren(contentsLevel, supportsLevel, curlevel);
+end
 
-   if(self.short) then io.write(curlevel, capitalize(self.short), "\n"); end
-   if(self.desc) then io.write(curlevel, self.desc, "\n"); end
+function Object:describeChildren(contentsLevel, supportsLevel, curlevel)
    if(contentsLevel > 0 
-      and type(self.contains) == "table" and #self.contains > 0
-      and (self == current.room or self.open or self.transparent)
+	 and (self == current.room or self.open or self.transparent)
    ) then
-      if(self.short) then
-	 io.write("\n", curlevel, "In ", self.pronoun, " ", self.short, " is:\n");
+      if(type(self.contains) == "table" and #self.contains > 0) then
+	 if(self.short) then
+	    io.write("\n", curlevel, "In ", self.pronoun, " ", self.short, " is:\n");
+	 else
+	    io.write("\n", curlevel, "Inside is:\n");
+	 end
+	 for i,x in ipairs(self.contains) do
+	    x:shortDescribe(true, contentsLevel-1, supportsLevel-1, curlevel);
+	 end
       else
-	 io.write("\n", curlevel, "Inside is:\n");
-      end
-      for i,x in ipairs(self.contains) do
-	 x:shortDescribe(true, contentsLevel-1, supportsLevel-1, curlevel);
+	 if(self.short) then
+	    io.write("\n", curlevel, self.pronoun, " ", self.short, " is empty\n");
+	 else
+	    io.write("\n", curlevel, "It is empty\n");
+	 end
       end
    end
 
@@ -148,43 +179,14 @@ end
 function Object:shortDescribe(pronoun, contentsLevel, supportsLevel, curlevel)
    contentsLevel = contentsLevel or 1;
    supportsLevel = supportsLevel or 2;
+   if(curlevel) then curlevel = curlevel.."  "; else curlevel = ""; end
    pronoun = pronoun or true;
    
-   if(curlevel) then curlevel = curlevel.."  "; else curlevel = ""; end
-
-   if(self.short) then 
-      if(pronoun) then
-	 io.write(curlevel, capitalize(self.pronoun), " ", self.short, "\n");
-      else
-	 io.write(curlevel, capitalize(self.short), "\n"); 
-      end
-   end
-
-   if(contentsLevel > 0 
-      and type(self.contains) == "table" and #self.contains > 0
-      and (self == room.current or self.open or self.transparent)
-   ) then
-      if(self.short) then
-	 io.write(curlevel, "In ", self.pronoun, " ", self.short, " is:\n");
-      else
-	 io.write(curlevel, "Inside is:\n");
-      end
-      for i,x in ipairs(self.contains) do
-	 x:shortDescribe(true, contentsLevel-1, supportsLevel-1, curlevel);
-      end
-   end
-
-   if(supportsLevel > 0 and type(self.supports) == "table" and #self.supports > 0) then
-      if(self.short) then
-	 io.write(curlevel, "On ", self.pronoun, " ", self.short, " is:\n");
-      else
-	 io.write(curlevel, "On it is:\n");
-      end
-      for i,x in ipairs(self.supports) do
-	 x:shortDescribe(true, contentsLevel-1, supportsLevel-1, curlevel);
-      end
-   end
+   io.write(curlevel, self:phrase(pronoun, true), "\n");
+   
+   self:describeChildren(contentsLevel, supportsLevel, curlevel);
 end
+
 
 
 function Object:before(what, ...)
@@ -210,7 +212,7 @@ function Object:hook(when, what, ...)
    end
 end
 
-   
+
 
 ----------------------------
 Thing = Object:new();
