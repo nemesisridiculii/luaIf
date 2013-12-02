@@ -16,6 +16,25 @@ At the base level, the library provides a class system, parser, and
 gramar description meachanism. Built on top of this base is a set of
 grammar rules describing the natural interactions in the world.
 
+\section{Conventions Used in This Book}
+
+When describing the members of a ``class,'' an example instance of the
+class matching the class' name but shown in lower case is used. For
+example \emph{object:member()} referes to a function called on an
+instance of the Object class--that is an instance created by calling
+Object:new().
+
+All classes in luaIf are named with capitalized names. When a function
+or method of the class--that is the prototype table itself--is
+referenced, the capitalized name is used as in the reference to
+Object:new() above.
+
+When referencing functions, a pair of parentesis are always included
+even when the call list is omitted. In this way we ensure that it is
+always clear that we are talking about a function and not a
+variable. The parameter list is often ommitted for brevity when it it
+is not required for completeness.
+
 \section{Class System}
 
 Lua does not provide an object-oriented programming environment, but
@@ -24,15 +43,110 @@ aproach taken in luaIf is similar to the one described in Programming
 in Lua 5th edition by using metatables to tie together instances and
 prototypes.
 
+Objects are instantiated using the new() method on the desired
+class. You can pass an initialized table to this method to initialize
+member data or override functions, or you can pass nothing (or nil) to
+construct a default object. The resulting object is returned from the
+method. If a table is passed, it will be converted to an instance of
+the class, overriding any existing class membership. The constructor
+does not create a copy of the table. However, this behavior should not
+be relied uppon: the calling function should always use the return
+value from new() and not use existing references to the table passed
+in.
+
 The luaIf.Object object is the base class of all objects. It has the
 following members:
 
 \begin{description}
+\item[object.pronoun] This variable contains the pronoun used to
+  describe the object (the, a, some, etc.). This variable defaults to
+  'the' if not set elsewhere. If the pronoun is capitalized, it will
+  always apear capitalized, otherwise the capitalization will be
+  adjusted accoding to use.
 \item[object:isA(type)] This function returns true if the `type'
   parameter is one of the base classes of the object. Type can either
   be one of the class tables, or a string matching the type name. For
   example, ``Thing'' tests if the object is of type luaIf.Thing.
+\item[object:parrent()] Returns the parrent type of an object. For an
+  instance, the parrent() function returns the class prototype
+  table. When called on class prototypes, this returns the
+  supperclass.
+\item[object:match(tokens)] tokens is a table of strings each of which
+  is a token out of the parser. This function returns true when the
+  all of the tokens in the given array are eitehr found in the
+  luaIf.junkWords table or the object.name table. See
+  \ref{section:parsingACommand} starting on page
+  \pageref{section:parsingACommand} for details.
+\item[object:placeIn(obj)] Causes obj to be contained by
+  object. It is easy to confuse the syntax of this command because it
+  reads as if you are placing object in obj, but in fact the opposite
+  is true. This command calls obj:liberate() before placing the object
+  in the object.contains array. This method also sets the
+  obj.containedBy variable to object.
+\item[object:placeOn(obj)] Causes obj to be supported by
+  object. Again, be mindful of the reversed symantecs. Like the
+  placeIn() method, this function calls obj:liberate() before placing
+  obj in the object.supports array. This method also sets the
+  obj.supportedBy variable to object.
+\item[object:removeFrom(obj)] If obj is supported by object, it is
+  removed from the object.supports array. If obj is contained by
+  object, it is removed from the object.conains array. It is usualy
+  better to call obj:liberate() instead.
+\item[object:liberate()] Causes object to no longer be contained or supported.
+\item[objet:details()] Returns a string containing the details of an
+  object. Usualy returns the desc variable, but objects can override
+  this method to provide programatic descriptions.
+\item[object:details(pronoun, capitalize)] Returns a string containing
+  the short name of an object. Usualy returns ``object.pronoun
+  object.short'', but objects can override this method to provide
+  programatic short names. If pronoun is false, the phrase should be
+  returned without a pronoun. If capitalize is true, the resulting
+  string is to be used at the beginging of a scentance.
+\item[object:describe(contentsLevel, supportsLevel, curLevel)] Prints
+  a description of the object based on teh object:phrase() and
+  object:details() functions. contentsLevel indicates the number of
+  recursions for printing the contents of the object. supportsLevel
+  indicates the number of recursions for printing what the object
+  supports. They default to 1 and 2 respectively. curLevel is a string
+  appended to each line and is used to control indentation. It
+  defaults to ``''.
+\item[object:describeChildren(contentsLevel, supportsLevel, curLevel)]
+  Like object:describe() except that the phrase and details are
+  ommited.
+\item[object:shortDescribe(pronoun, contentsLevel, supportsLevel,
+  curLevel)] Like object:describe except that the details are
+  ommited. pronoun determines the value passed to the object:phrase()
+  function.
+\item[object:before(what, ...)] Calls hook(``before'', what,
+  ...). used to signal that the event ``what'' is about to happen to
+  the object.
+\item[object:after(what, ...)] Calls hook(``after'', what, ...). Used
+  to signal that the event ``what'' has successfully happened to the object.
+\item[object:alert(what, ...)] Calls hook(``alert'', what, ...). Used
+  to signal that the event ``what'' is about to happen to annother object
+  related to object. This usualy indicates soemthing happening to an
+  object contained by object.
+\item[object:hook(when, what, ...)] This is the main hook handler. It
+  looks for functions to handle the specified when/what combination
+  and calls it passing in the remaining parameters (...). To find a
+  hook handler, this method constructs the string when..``\_''..what
+  and uses it as a key on the current object. If a function exists
+  with that name, it is called with the additional parameters to
+  hook().
 
+  See \ref{section:handlingEventsAndHooks} starting on page
+  \pageref{section:handlingEventsAndHooks} for more details on hooks.
 \end{description}
+
+
+
+\section{Parser}
+\subsection{Parsing a command}
+\label{section:parsingACommand}
+
+\subsection{Grammar}
+
+\subsubsection{Handling Events and Hooks}
+\label{section:handlingEventsAndHooks}
 
 \end{document}
