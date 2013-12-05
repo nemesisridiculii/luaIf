@@ -1,6 +1,10 @@
 \documentclass{book}
+\usepackage{verbatim}
+
 \title{The Lua Interactive Fiction Module}
 \author{Jeffrey Adair}
+
+\newcommand{\myref}[1]{\ref{#1} starting on page \pageref{#1}}
 
 \begin{document}
 \maketitle
@@ -35,13 +39,49 @@ always clear that we are talking about a function and not a
 variable. The parameter list is often ommitted for brevity when it it
 is not required for completeness.
 
+\section{Hello Tiny World}
+
+Before we dive into the depths of creating a game using this library,
+let's take a look at a clasic Hello World! example. Although it is
+short, this game has points and an ending condition, and as such it
+shows some of the features of the luaIf environment.
+
+%\verbatiminput{helloworld.lua}
+
+And here is an example of someone playing this game.
+
+%\verbatiminput{helloworld.txt}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Writing Interactive Fiction}
+
+\section{Describing the Scene}
+
+When writing an interactive fiction game, the largest task is, of
+course, describing the world in which it takes place. Every room must
+be described to the computer, and for every object you must describe
+both its apearance and its behavior.
+
+\subsection{Hello Larger World}
+
+\section{New Types}
+
+\section{Grammar}
+
+\subsection{Handling Events and Hooks}
+\label{section:handlingEventsAndHooks}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5%%%%%%%
+\chapter{Technical Reference}
+
 \section{Class System}
 
 Lua does not provide an object-oriented programming environment, but
 it does provide the means to create one within the language. The
-aproach taken in luaIf is similar to the one described in Programming
-in Lua 5th edition by using metatables to tie together instances and
-prototypes.
+aproach taken in luaIf is similar to the one described in
+\textit{Programming in Lua 5th edition} by using metatables to tie
+together instances and prototypes.
 
 Objects are instantiated using the new() method on the desired
 class. You can pass an initialized table to this method to initialize
@@ -53,6 +93,9 @@ does not create a copy of the table. However, this behavior should not
 be relied uppon: the calling function should always use the return
 value from new() and not use existing references to the table passed
 in.
+
+\subsection{luaIf.Object}
+\label{section:luaIf.Object}
 
 The luaIf.Object object is the base class of all objects. It has the
 following members:
@@ -75,8 +118,7 @@ following members:
   is a token out of the parser. This function returns true when the
   all of the tokens in the given array are eitehr found in the
   luaIf.junkWords table or the object.name table. See
-  \ref{section:parsingACommand} starting on page
-  \pageref{section:parsingACommand} for details.
+  section \myref{section:matchingCaptures} for details.
 \item[object:placeIn(obj)] Causes obj to be contained by
   object. It is easy to confuse the syntax of this command because it
   reads as if you are placing object in obj, but in fact the opposite
@@ -96,7 +138,7 @@ following members:
 \item[objet:details()] Returns a string containing the details of an
   object. Usualy returns the desc variable, but objects can override
   this method to provide programatic descriptions.
-\item[object:details(pronoun, capitalize)] Returns a string containing
+\item[object:phrase(pronoun, capitalize)] Returns a string containing
   the short name of an object. Usualy returns ``object.pronoun
   object.short'', but objects can override this method to provide
   programatic short names. If pronoun is false, the phrase should be
@@ -134,19 +176,141 @@ following members:
   with that name, it is called with the additional parameters to
   hook().
 
-  See \ref{section:handlingEventsAndHooks} starting on page
-  \pageref{section:handlingEventsAndHooks} for more details on hooks.
+  See section \myref{section:handlingEventsAndHooks} for more details on hooks.
 \end{description}
 
+\subsection{Subtypes}
 
+The following types are derived from luaIf.Object. They do not provide
+any additional functionality over the base class except to
+differentiate between types of object in the scene.
+
+\begin{itemize}
+\item Thing
+\item Room
+\item Person
+\end{itemize}
 
 \section{Parser}
-\subsection{Parsing a command}
-\label{section:parsingACommand}
 
-\subsection{Grammar}
+Statement parsing is performed in three phases.
 
-\subsubsection{Handling Events and Hooks}
-\label{section:handlingEventsAndHooks}
+\begin{enumerate}
+\item Break the input string into tokens
+\item Match grammar rules
+\item Match captures
+\end{enumerate}
+
+Each step is described in detail below.
+
+\subsection{Tokenization}
+
+The first step in parsing an input stream is to break it into
+tokens. This is done by the luaIf.tokenize() function. This function
+takes an input string and returns an array of strings built by
+deconstructing the input into tokens.
+
+To break the string into tokens, the tokenizer examines each character
+to determine which class it is in. The character classes are:
+alphanumeric characters plus the hiphen, punctuation, and others. Each
+contiguous region of like-typed characters become a token. ``Other''
+characters are dropped.
+
+For example, the string ``Hi there, how are you?'' is tokenized into
+\begin{itemize}
+\item Hi
+\item there
+\item ,
+\item how
+\item are
+\item you
+\item ?
+\end{itemize}
+
+\subsection{Matching Grammar Rules}
+\label{section:matchingGrammarRules}
+
+For a complete description of how to write a grammar rule, see
+section \myref{section:writingGrammarRules}.
+
+First, the longest verb string that matches the start of the string is
+found. This is as a key to find all grammar rules to check. The
+remainder of the string is matched against the grammar rules
+associated with that string to find a match. If none is found, then
+the rest of the (shorter) verb strings are checked to try to find more
+verbs. The luaIf.addVerb() function ``normalizes'' the grammar to only
+have one verb token. (Multiple entries are added if multiple verbs
+were specified.) This simplifies the matching of each grammar
+specification.
+
+For each grammar specification, the system tries to find all of the
+literal tokens in the specification within the token list. The literal
+tokens are used to partition the input tokens. The grammar must
+specifiy a ``capture'' operation by including one of the values in the
+luaIf.capture table for all tokens not consumed by the literals. These
+are collected up for matching in the next step.
+
+\begin{verbatim}
+Tokens={"place", "the", "ball", "on", "the", "counter"};
+Grammar={"place", luaIf.capture.Thing, "on", luaIf.capture.Thing};
+\end{verbatim}
+
+First, the verb ``place'' is consumed. Next a luaIf.capture.Thing is
+encountered. Because it is a capture, tokens are collected until the
+next literal ``on'' is encountered. Thus the first caputre collects
+``the'' and ``ball.'' Then the ``on'' is consumed as a literal. The
+parser then encounters annother capture and so begins collecting
+tokens. Because there is not annother literal in the grammar
+specification, the remaining tokens--``the'' and ``counter''--are
+collected.
+
+If the grammar were instead
+
+\begin{verbatim}
+Grammar={"place", luaIf.capture.Thing, "on", "top", "of",
+luaIf.capture.Thing};
+\end{verbatim}
+
+\noindent then the grammar matching would fail when the ``top'' token
+does not match the next available token after ``on.''
+
+If a grammar specification matches, then processing continues with
+capture matching. Otherwise, the grammar is rejected, and the next one
+in the list is considered.
+
+\subsection{Matching Captures}
+\label{section:matchingCaptures}
+
+At this point in the parsing, all of the literal tokens in a grammar
+specification have been consumed, and there is a list of tokens
+associated with each capture. The next step is to look in the sceen
+for items that match the tokens. This process is called capture
+matching.
+
+For luaIf.capture.Thing, luaIf.capture.Room, etc., all of the objects
+returned by the luaIf.visible() itterator are examined. The captured
+tokens are passed to the object:match() function. If this function
+returns true, then the object matches and takes the palce of the
+captured tokens. The luaIf.visible() itterator recurses through the
+sceen returning everything that can be seen in the current room--that
+is contained by the room and not inside a closed non-transparent
+container--and all visible things in the inventory.
+
+The object:match() function as described in section
+\ref{section:luaIf.Object} returns true if all of the tokens passed to
+it are contained in either the luaIf.junkWords list, or in the
+object's name list.
+
+luaIf.capture.Inventory performs a similar search, however it only
+examines items visible in the player's inventory.
+
+luaIf.capture.Rest is a special kind of capture. Instead of finding an
+object, this capture remains as a list of tokens when passed to the
+handler function.
+
+If no object can be found for one of the captures, then the grammar is
+rejected, and the next grammar spec is considered as described in
+section \ref{section:matchingGrammarRules}.
+
 
 \end{document}
